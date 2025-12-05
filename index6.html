@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Online Exam Portal — Final</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>
+  :root{--blue:#0b63d8;--bg:#eef6ff;--muted:#6b7280}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter,system-ui,Arial,Helvetica,sans-serif;background:linear-gradient(180deg,var(--bg),#fff);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+  .card{width:100%;max-width:880px;background:#fff;border-radius:12px;padding:26px;box-shadow:0 16px 40px rgba(11,99,216,0.08)}
+  h1{color:var(--blue);margin:0 0 12px}
+  .row{display:flex;gap:12px;align-items:center}
+  label{display:block;margin-top:8px;font-size:13px;color:#374151}
+  input,select,button,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid #e6eefc;background:#fbfdff;font-size:14px}
+  textarea{min-height:80px}
+  .hidden{display:none}
+  .small{font-size:13px;color:var(--muted)}
+  .danger{color:#b00020}
+  .success{color:green}
+  button{background:var(--blue);color:#fff;border:0;cursor:pointer;padding:10px 14px;border-radius:8px}
+  .btn-ghost{background:#eef5ff;color:var(--blue);border:1px solid rgba(11,99,216,0.08)}
+  .question-box{background:#f8fbff;padding:10px;border-radius:8px;margin-top:12px;border:1px solid #e9f2ff}
+  .delete-btn{background:#ff4d4d;color:white;border:none;padding:6px 10px;border-radius:6px;cursor:pointer}
+  .flex-between{display:flex;justify-content:space-between;align-items:center}
+  .muted{color:var(--muted)}
+  .hr{height:1px;background:#eee;margin:14px 0;border-radius:2px}
+  .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:#eef5ff;color:var(--blue);font-weight:600}
+  @media (max-width:780px){.row{flex-direction:column}}
+</style>
+</head>
+<body>
+  <div class="card" id="app">
+
+    <!-- LOGIN -->
+    <div id="loginView">
+      <h1>Online Exam Portal</h1>
+
+      <label class="small">Role</label>
+      <select id="role">
+        <option value="">Select role</option>
+        <option value="student">Student</option>
+        <option value="admin">Admin</option>
+      </select>
+
+      <label class="small">Email / Username</label>
+      <input id="loginUser" placeholder="admin or student email">
+
+      <label class="small">Password</label>
+      <input id="loginPass" type="password" placeholder="password">
+
+      <div class="row" style="margin-top:12px">
+        <button id="loginBtn">Login</button>
+        <button id="openSignupBtn" class="btn-ghost">Create Student Account</button>
+        <button id="seedDemo" class="btn-ghost" title="Convenience for demo">Seed Demo Student</button>
+      </div>
+
+      <p id="loginMsg" class="danger"></p>
+      <p class="small">Admin login: <span class="pill">admin</span> / <span class="pill">admin123</span></p>
+      <div class="hr"></div>
+    </div>
+
+    <!-- SIGNUP -->
+    <div id="signupView" class="hidden">
+      <div class="flex-between"><h2>Create Student Account</h2></div>
+      <label>Full name</label>
+      <input id="su_name" placeholder="Student full name">
+      <label>Email</label>
+      <input id="su_email" placeholder="you@college.edu">
+      <label>Password</label>
+      <input id="su_pass" type="password">
+      <div class="row" style="margin-top:12px">
+        <button id="createAccountBtn">Create Account</button>
+        <button id="cancelSignupBtn" class="btn-ghost">Cancel</button>
+      </div>
+      <p id="signupMsg"></p>
+      <div class="hr"></div>
+    </div>
+
+    <!-- ADMIN DASHBOARD -->
+    <div id="adminView" class="hidden">
+      <div class="flex-between">
+        <div>
+          <h2>Admin Dashboard</h2>
+          <div class="small">Manage questions & view student results</div>
+        </div>
+        <div style="width:220px"><button id="logoutBtn">Logout</button></div>
+      </div>
+
+      <h3 style="margin-top:12px">Add Question</h3>
+      <label>Question Text</label>
+      <textarea id="q_text" placeholder="Write the question here..."></textarea>
+
+      <div class="row" style="margin-top:8px">
+        <input id="o_a" placeholder="Option A">
+        <input id="o_b" placeholder="Option B">
+      </div>
+      <div class="row" style="margin-top:8px">
+        <input id="o_c" placeholder="Option C">
+        <input id="o_d" placeholder="Option D">
+      </div>
+
+      <label>Correct Option</label>
+      <select id="q_correct">
+        <option value="">-- select correct --</option>
+        <option value="A">A</option><option value="B">B</option>
+        <option value="C">C</option><option value="D">D</option>
+      </select>
+
+      <div class="row" style="margin-top:10px">
+        <button id="saveQBtn">Save Question</button>
+        <button id="clearQsBtn" class="btn-ghost">Clear All Questions</button>
+      </div>
+      <p id="saveQMsg"></p>
+
+      <h3 style="margin-top:18px">Saved Questions</h3>
+      <div id="questionsList" style="max-height:260px;overflow:auto"></div>
+
+      <h3 style="margin-top:18px">Student Results</h3>
+      <div id="adminResults" style="max-height:260px;overflow:auto"></div>
+
+    </div>
+
+    <!-- STUDENT DASHBOARD -->
+    <div id="studentView" class="hidden">
+      <div class="flex-between">
+        <div>
+          <h2>Student Dashboard</h2>
+          <div class="small">Welcome, <b id="studentNameDisplay"></b></div>
+        </div>
+        <div style="width:220px"><button id="logoutBtn2">Logout</button></div>
+      </div>
+
+      <div style="margin-top:12px">
+        <button id="startExamBtn">Start Exam</button>
+      </div>
+
+      <h3 style="margin-top:12px">My Results</h3>
+      <div id="studentResult"></div>
+    </div>
+
+    <!-- EXAM VIEW -->
+    <div id="examView" class="hidden">
+      <div class="flex-between">
+        <h2>Exam</h2>
+        <div class="small">Student: <b id="examStudentName"></b></div>
+      </div>
+      <div class="small" style="margin-top:6px">Time left: <span id="examTimer">--:--</span></div>
+
+      <div id="examQuestions" style="margin-top:12px;max-height:420px;overflow:auto"></div>
+
+      <div class="row" style="margin-top:12px">
+        <button id="submitExamBtn">Submit Exam</button>
+        <button id="cancelExamBtn" class="btn-ghost">Cancel</button>
+      </div>
+    </div>
+
+    <!-- RESULT VIEW -->
+    <div id="resultView" class="hidden">
+      <h2>Result</h2>
+      <div id="resultText" class="small"></div>
+      <div style="margin-top:12px"><button id="backToStudentBtn">Back to Dashboard</button></div>
+    </div>
+
+  </div>
+
+<script>
+/* ============================
+   Storage helpers & config
+   ============================ */
+const ADMIN = { user: "admin", pass: "admin123" };
+
+const storage = {
+  read(key){
+    try{ return JSON.parse(localStorage.getItem(key) || "null"); }
+    catch(e){ console.warn("storage read error", e); return null; }
+  },
+  write(key,value){
+    try{ localStorage.setItem(key, JSON.stringify(value)); }
+    catch(e){ console.warn("storage write error", e); }
+  },
+  remove(key){ localStorage.removeItem(key); }
+};
+
+/* ============================
+   View helper
+   ============================ */
+function show(viewId){
+  ["loginView","signupView","adminView","studentView","examView","resultView"]
+    .forEach(id => document.getElementById(id).classList.add("hidden"));
+  document.getElementById(viewId).classList.remove("hidden");
+}
+
+/* ============================
+   Signup (Student)
+   ============================ */
+function createStudentAccount(){
+  const name = su_name.value.trim();
+  const email = su_email.value.trim().toLowerCase();
+  const pass = su_pass.value;
+
+  signupMsg.textContent = "";
+  if(!name || !email || !pass){ signupMsg.textContent = "All fields required."; signupMsg.style.color = "red"; return; }
+
+  let users = storage.read("oe_users") || [];
+  if(users.find(u => u.user === email)){ signupMsg.textContent = "Account with this email exists."; signupMsg.style.color = "red"; return; }
+
+  users.push({ name: name, user: email, pass: pass });
+  storage.write("oe_users", users);
+
+  signupMsg.textContent = "Account created. You can now login."; signupMsg.style.color = "green";
+
+  setTimeout(()=> { show("loginView"); }, 900);
+}
+
+/* ============================
+   Login
+   ============================ */
+function handleLogin(){
+  const roleVal = role.value;
+  const userVal = loginUser.value.trim();
+  const passVal = loginPass.value;
+
+  loginMsg.textContent = "";
+
+  if(!roleVal){ loginMsg.textContent = "Select role."; return; }
+  if(!userVal || !passVal){ loginMsg.textContent = "Enter credentials."; return; }
+
+  if(roleVal === "admin"){
+    // admin login (fixed)
+    if(userVal === ADMIN.user && passVal === ADMIN.pass){
+      storage.write("oe_session", { role: "admin", user: ADMIN.user });
+      openAdminView();
+    } else { loginMsg.textContent = "Invalid admin credentials."; }
+    return;
+  }
+
+  // student login
+  let users = storage.read("oe_users") || [];
+  const student = users.find(u => (u.user === userVal.toLowerCase() || u.user === userVal) && u.pass === passVal);
+  if(!student){ loginMsg.textContent = "Invalid student login or account doesn't exist."; return; }
+
+  // set session with both email and name
+  storage.write("oe_session", { role: "student", email: student.user, name: student.name });
+  openStudentView(student.user, student.name);
+}
+
+/* ============================
+   Admin: questions + results
+   ============================ */
+function openAdminView(){
+  loadQuestions();
+  loadAdminResults();
+  show("adminView");
+}
+
+function saveQuestion(){
+  const text = q_text.value.trim();
+  const A = o_a.value.trim();
+  const B = o_b.value.trim();
+  const C = o_c.value.trim();
+  const D = o_d.value.trim();
+  const ans = q_correct.value;
+
+  saveQMsg.textContent = "";
+  if(!text || !A || !B || !C || !D || !ans){
+    saveQMsg.textContent = "Fill all fields."; saveQMsg.style.color = "red"; return;
+  }
+
+  let qs = storage.read("oe_questions") || [];
+  qs.push({ id: Date.now(), text, opts: { A,B,C,D }, ans });
+  storage.write("oe_questions", qs);
+
+  saveQMsg.textContent = "Saved."; saveQMsg.style.color = "green";
+
+  // clear inputs
+  q_text.value = ""; o_a.value = ""; o_b.value = ""; o_c.value = ""; o_d.value = ""; q_correct.value = "";
+  loadQuestions();
+}
+
+function loadQuestions(){
+  const qs = storage.read("oe_questions") || [];
+  const container = questionsList;
+  if(!Array.isArray(qs) || qs.length === 0){ container.innerHTML = "<div class='small muted'>No questions added yet.</div>"; return; }
+
+  container.innerHTML = qs.map((q, idx) => `
+    <div class="question-box">
+      <div><b>Q${idx+1}:</b> ${escapeHtml(q.text)}</div>
+      <div class="small">A: ${escapeHtml(q.opts.A)} | B: ${escapeHtml(q.opts.B)} | C: ${escapeHtml(q.opts.C)} | D: ${escapeHtml(q.opts.D)}</div>
+      <div style="margin-top:6px"><b>Answer:</b> ${q.ans}</div>
+      <div style="margin-top:8px"><button class="delete-btn" onclick="deleteQuestion('${q.id}')">Delete</button></div>
+    </div>
+  `).join("");
+}
+
+function deleteQuestion(id){
+  if(!confirm("Delete this question?")) return;
+  let qs = storage.read("oe_questions") || [];
+  qs = qs.filter(q => String(q.id) !== String(id));
+  storage.write("oe_questions", qs);
+  loadQuestions();
+}
+
+/* ============================
+   Admin: view results
+   ============================ */
+function loadAdminResults(){
+  const r = storage.read("oe_results") || [];
+  const container = adminResults;
+  if(!Array.isArray(r) || r.length === 0){ container.innerHTML = "<div class='small muted'>No results yet.</div>"; return; }
+
+  // show most recent first
+  container.innerHTML = r.slice().reverse().map(rec => `
+    <div class="question-box">
+      <div><b>${escapeHtml(rec.name || rec.email)}</b> — ${escapeHtml(rec.email)}</div>
+      <div>Score: <b>${rec.score}</b> / ${rec.total} &nbsp; <span class="small muted">(${rec.takenAt || ""})</span></div>
+    </div>
+  `).join("");
+}
+
+/* ============================
+   Student dashboard / exam
+   ============================ */
+function openStudentView(email, name){
+  studentNameDisplay.textContent = name || email;
+  loadStudentResults(email);
+  show("studentView");
+}
+
+function loadStudentResults(email){
+  const r = storage.read("oe_results") || [];
+  const my = (r||[]).filter(x => String(x.email).toLowerCase() === String(email).toLowerCase());
+  if(!my || my.length === 0) { studentResult.innerHTML = "<div class='small muted'>No attempts yet.</div>"; return; }
+  studentResult.innerHTML = my.slice().reverse().map(rec => `
+    <div class="question-box">
+      <div>Score: <b>${rec.score}</b> / ${rec.total}</div>
+      <div class="small muted">Taken: ${rec.takenAt || ""}</div>
+    </div>
+  `).join("");
+}
+
+/* ============================
+   Exam flow (start, timer, submit)
+   ============================ */
+let examTimerInterval = null;
+function startExam(){
+  const sess = storage.read("oe_session");
+  if(!sess || sess.role !== "student"){
+    alert("You must be logged in as a student to start exam.");
+    show("loginView"); return;
+  }
+
+  const email = sess.email;
+  const name = sess.name || email;
+  examStudentName.textContent = name + " (" + email + ")";
+
+  const qs = storage.read("oe_questions") || [];
+  if(!Array.isArray(qs) || qs.length === 0){ alert("No questions available. Ask admin to add questions."); return; }
+
+  // render questions
+  examQuestions.innerHTML = qs.map((q,i) => `
+    <div class="question-box">
+      <div><b>Q${i+1}:</b> ${escapeHtml(q.text)}</div>
+      <div style="margin-top:6px">
+        <label><input type="radio" name="q${i}" value="A"> ${escapeHtml(q.opts.A)}</label><br>
+        <label><input type="radio" name="q${i}" value="B"> ${escapeHtml(q.opts.B)}</label><br>
+        <label><input type="radio" name="q${i}" value="C"> ${escapeHtml(q.opts.C)}</label><br>
+        <label><input type="radio" name="q${i}" value="D"> ${escapeHtml(q.opts.D)}</label>
+      </div>
+    </div>
+  `).join("");
+
+  // start timer (set exam duration here; e.g., 3 minutes = 180)
+  startTimer(180);
+  show("examView");
+}
+
+function startTimer(seconds){
+  clearInterval(examTimerInterval);
+  let remaining = seconds;
+  const el = examTimer;
+  el.textContent = formatTime(remaining);
+  examTimerInterval = setInterval(()=>{
+    remaining--;
+    el.textContent = formatTime(remaining);
+    if(remaining <= 0){
+      clearInterval(examTimerInterval);
+      alert("Time is up — exam will be submitted automatically.");
+      submitExam();
+    }
+  },1000);
+}
+function formatTime(s){ const m = Math.floor(s/60); const sec = s % 60; return `${m}:${String(sec).padStart(2,'0')}`; }
+
+function submitExam(){
+  clearInterval(examTimerInterval);
+  const qs = storage.read("oe_questions") || [];
+  let score = 0;
+  qs.forEach((q,i) => {
+    const sel = document.querySelector(`input[name="q${i}"]:checked`);
+    if(sel && sel.value === q.ans) score++;
+  });
+
+  const sess = storage.read("oe_session");
+  const email = sess.email;
+  const name = sess.name || email;
+
+  // save result
+  const results = storage.read("oe_results") || [];
+  const rec = { email, name, score, total: qs.length, takenAt: new Date().toLocaleString() };
+  results.push(rec);
+  storage.write("oe_results", results);
+
+  // update admin results if admin is viewing next time
+  loadAdminResults();
+  // show result to student
+  resultText.innerHTML = `<div>Your Score: <b>${score}</b> / ${qs.length}</div><div class="small muted">Taken: ${rec.takenAt}</div>`;
+  show("resultView");
+}
+
+/* ============================
+   Utilities
+   ============================ */
+function escapeHtml(s){
+  return String(s || "").replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ============================
+   Event wiring
+   ============================ */
+loginBtn.addEventListener("click", handleLogin);
+openSignupBtn.addEventListener("click", ()=>{ signupMsg.textContent=""; show("signupView"); });
+cancelSignupBtn.addEventListener("click", ()=> show("loginView"));
+createAccountBtn.addEventListener("click", createStudentAccount);
+logoutBtn.addEventListener("click", ()=>{ storage.remove("oe_session"); show("loginView"); });
+logoutBtn2.addEventListener("click", ()=>{ storage.remove("oe_session"); show("loginView"); });
+
+saveQBtn.addEventListener("click", saveQuestion);
+clearQsBtn.addEventListener("click", ()=>{ if(confirm("Clear ALL questions?")){ storage.write("oe_questions",[]); loadQuestions(); }});
+
+startExamBtn.addEventListener("click", startExam);
+submitExamBtn.addEventListener("click", submitExam);
+cancelExamBtn.addEventListener("click", ()=>{ clearInterval(examTimerInterval); show("studentView"); });
+backToStudentBtn.addEventListener("click", ()=>{ show("studentView"); });
+
+seedDemo.addEventListener("click", ()=>{
+  // convenience: create a demo student and one demo question
+  let users = storage.read("oe_users") || [];
+  if(!users.find(u=>u.user==="student1@example.com")){
+    users.push({name:"Demo Student", user:"student1@example.com", pass:"pass123"});
+    storage.write("oe_users", users);
+    alert("Demo student created: student1@example.com / pass123");
+  } else alert("Demo student already exists.");
+  // also add one sample question if none
+  let qs = storage.read("oe_questions") || [];
+  if(!qs || qs.length === 0){
+    qs.push({ id: Date.now()+1, text: "What is the capital of India?", opts: { A:"Mumbai", B:"Kolkata", C:"New Delhi", D:"Chennai" }, ans:"C" });
+    storage.write("oe_questions", qs);
+  }
+});
+
+window.addEventListener("load", ()=>{
+  // ensure storage objects exist
+  if(!Array.isArray(storage.read("oe_users"))) storage.write("oe_users", []);
+  if(!Array.isArray(storage.read("oe_questions"))) storage.write("oe_questions", []);
+  if(!Array.isArray(storage.read("oe_results"))) storage.write("oe_results", []);
+  show("loginView");
+});
+</script>
+</body>
+</html>
